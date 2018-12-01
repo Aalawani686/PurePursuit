@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import math
 import copy
+import time
+from matplotlib.animation import FuncAnimation
 
 class Point:
     """ Point class represents and manipulates x,y coords. """
@@ -9,6 +11,9 @@ class Point:
         """ Create a new point at the origin """
         self.x = x
         self.y = y
+
+# class Robot:
+
 
 def distanceForm(xi, yi, xii, yii):
     sq1 = (xi-xii)*(xi-xii)
@@ -74,9 +79,12 @@ YY = (int)(deltaYY/distance2 * spacing)
 XXX = (int)(deltaXXX/distance3 * spacing)
 YYY = (int)(deltaYYY/distance3 * spacing)
 
+length = 0
+
 for i in range(0, num_points_that_fit):
     array[0][i] = (p1.x + X * i)
     array[1][i] = (p1.y + Y * i)
+
 
 for i in range(0, num_points_that_fit2):
     array[0][num_points_that_fit + i] = (p2.x + XX * i)
@@ -92,6 +100,7 @@ plt.ylim(-100, 200)
 fig2, ax2 = plt.subplots()
 plt.xlim(0, 300)
 plt.ylim(-100, 200)
+fig3, ax3 = plt.subplots()
 
 
 # vector = end_point - start_point
@@ -103,6 +112,8 @@ ax2.scatter(array[0], array[1])
 
 distance = [0] * len(array[0])
 for k in range (1, len(distance)):
+    last = length
+    length += distanceForm(array[0][k-1], array[1][k-1], array[0][k], array[1][k])
     distance[k] = distance[k-1] + distanceForm((int)(array[0][k-1]), (int)(array[1][k-1]), (int)(array[0][k]), (int)(array[1][k]))
     if(k == len(distance)-1):
          break
@@ -120,7 +131,71 @@ for k in range (1, len(distance)):
     if(r<50):
         circle1 = plt.Circle((a, b), r, color='r')
         ax2.add_artist(circle1)
-    print("Curvature: " + str(1/r) + "   Radius: " + str(r))
+    # print("X: " + str(array[0][k] - array[0][k-1]) + "Y: " + str(str(array[1][k] - array[1][k-1])) + "Length: " + str(length - last))
+    # print("Curvature: " + str(1/r) + "   Radius: " + str(r))
     # print("Distance of " + str(k) + ": " + str(distance[k]))
+
+distance_gr=[]
+velocity_gr=[]
+acceleration_gr=[]
+time_gr=[]
+VELOCITY_MIN = 10
+VELOCITY_MAX = 40
+velocity = VELOCITY_MIN
+setPoint = length
+distance1 = setPoint/5.0
+distance2 = 3.0*setPoint/5.0+distance1
+distance3 = setPoint/5.0+distance2
+time1=(2*distance1)/(VELOCITY_MAX+VELOCITY_MIN)
+time2=(2*(distance2-distance1))/(VELOCITY_MAX*2)
+time3=(2*(distance3-distance2))/(VELOCITY_MAX+VELOCITY_MIN)
+time_total=time1+time2+time3
+acceleration = (VELOCITY_MAX-VELOCITY_MIN)/time1
+
+# print("total: " + str(setPoint) + " 1: " + str(distance1) + " 2: " + str(distance2) + " 3: " + str(distance3))
+# print(" T1: " , time1 , " T2: " , time2 , " T3: " , time3)
+
+lastT = 0
+t1 = time.time()
+position = 0
+aT = 0
+i = 0
+
+while(position < setPoint):
+    lastT = t1
+    t1 = time.time()
+    t = (t1 - lastT)
+    aT += t
+    i += 1
+
+    error = setPoint-position;
+
+    if(position <= distance1):
+        position += velocity*t
+        velocity += acceleration*t
+    elif(position <= distance2):
+        velocity = VELOCITY_MAX
+        position += velocity*t
+    elif(error < 0):
+        velocity = -VELOCITY_MIN
+    else:
+        if(velocity<VELOCITY_MIN):
+            velocity = VELOCITY_MIN
+            position += veloctity*t
+        else:
+            position += velocity*t
+            velocity -= (acceleration * t)
+    if(i%100):
+        distance_gr.append(position)
+        velocity_gr.append(velocity)
+        acceleration_gr.append(acceleration)
+        time_gr.append(aT)
+
+plt.subplot(3,1,1)
+plt.plot(time_gr,distance_gr)
+plt.subplot(3,1,2)
+plt.plot(time_gr,velocity_gr)
+plt.subplot(3,1,3)
+plt.plot(time_gr,acceleration_gr)
 
 plt.show()
