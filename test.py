@@ -45,15 +45,17 @@ def smoothing(path, a, b, tolerance, length):
 
     return newPath
 
-array = [0] * 2
+array = [0] * 4
 array[0] = [0] * 50
 array[1] = [0] * 50
+array[2] = [0] * 50
+array[3] = [0] * 50
 
 spacing = 15
-p1 = Point(0, 0)
-p2 = Point(90, 0)
-p3 = Point(130, -50)
-p4 = Point(200, -60)
+p1 = Point(90, 20)
+p2 = Point(100, -50)
+p3 = Point(160, 20)
+p4 = Point(190, -40)
 # start_point = 100
 
 deltaY = p2.y - p1.y
@@ -112,6 +114,7 @@ ax2.scatter(array[0], array[1])
 
 distance = [0] * len(array[0])
 for k in range (1, len(distance)):
+    if(array[0][k] == 0): break
     last = length
     length += distanceForm(array[0][k-1], array[1][k-1], array[0][k], array[1][k])
     distance[k] = distance[k-1] + distanceForm((int)(array[0][k-1]), (int)(array[1][k-1]), (int)(array[0][k]), (int)(array[1][k]))
@@ -128,7 +131,9 @@ for k in range (1, len(distance)):
     b = (x2*x2 - 2*x2*c1 + y2*y2 - x3*x3 + 2*x3*c1 - y3*y3)/(2*(x3*c2 - y3 + y2 - x2*c2))
     a = c1 - c2*b
     r = math.sqrt((x1-a)**2 + (y1-b)**2)
-    if(r<50):
+    array[2][k] = r
+    array[3][k] = length
+    if(r<10):
         circle1 = plt.Circle((a, b), r, color='r')
         ax2.add_artist(circle1)
     # print("X: " + str(array[0][k] - array[0][k-1]) + "Y: " + str(str(array[1][k] - array[1][k-1])) + "Length: " + str(length - last))
@@ -160,6 +165,8 @@ t1 = time.time()
 position = 0
 aT = 0
 i = 0
+k = 3
+j = 1
 
 while(position < setPoint):
     lastT = t1
@@ -167,27 +174,30 @@ while(position < setPoint):
     t = (t1 - lastT)
     aT += t
     i += 1
+    if(position > array[3][j]):
+        j = j+1
 
+    v = array[2][j]
     error = setPoint-position;
 
     if(position <= distance1):
-        position += velocity*t
+        position += min(velocity, k*v)*t
         velocity += acceleration*t
     elif(position <= distance2):
         velocity = VELOCITY_MAX
-        position += velocity*t
+        position += min(velocity*t, k*v)
     elif(error < 0):
         velocity = -VELOCITY_MIN
     else:
         if(velocity<VELOCITY_MIN):
             velocity = VELOCITY_MIN
-            position += veloctity*t
+            position += min(veloctity ,k*v)*t
         else:
-            position += velocity*t
+            position += min(velocity, k*v)*t
             velocity -= (acceleration * t)
-    if(i%100):
+    if(i%10000 == 0):
         distance_gr.append(position)
-        velocity_gr.append(velocity)
+        velocity_gr.append(min(velocity, k*v))
         acceleration_gr.append(acceleration)
         time_gr.append(aT)
 
@@ -197,5 +207,33 @@ plt.subplot(3,1,2)
 plt.plot(time_gr,velocity_gr)
 plt.subplot(3,1,3)
 plt.plot(time_gr,acceleration_gr)
+
+
+# Scatter plot
+
+# fig4, axes = plt.subplots()
+fig4 = plt.figure(figsize = (5,5))
+axes = fig4.add_subplot(111)
+axes.scatter(time_gr, distance_gr)
+
+'''fig5 = plt.figure(figsize = (5,5))
+axes1 = fig4.add_subplot(111)
+axes1.scatter(time_gr, velocity_gr)'''
+
+# axes.scatter(Acc_11, Acc_12)
+
+axes.set_xlim(min(time_gr), max(time_gr))
+axes.set_ylim(min(distance_gr), max(distance_gr))
+point, = axes.plot([time_gr[0]],[distance_gr[0]], 'go')
+
+def ani(coords):
+    point.set_data([coords[0]],[coords[1]])
+    return point
+
+def frames():
+    for acc_11_pos, acc_12_pos in zip(time_gr, distance_gr):
+        yield acc_11_pos, acc_12_pos
+
+ani = FuncAnimation(fig4, ani, frames=frames, interval=1)
 
 plt.show()
