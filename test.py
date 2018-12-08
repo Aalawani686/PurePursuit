@@ -104,7 +104,6 @@ plt.xlim(0, 300)
 plt.ylim(-100, 200)
 fig3, ax3 = plt.subplots()
 
-
 # vector = end_point - start_point
 #print(num_points_that_fit2+num_points_that_fit)
 
@@ -201,11 +200,11 @@ while(position < setPoint):
         acceleration_gr.append(acceleration)
         time_gr.append(aT)
 
-plt.subplot(3,1,1)
+plt.subplot(3,3,3)
 plt.plot(time_gr,distance_gr)
-plt.subplot(3,1,2)
+plt.subplot(3,3,6)
 plt.plot(time_gr,velocity_gr)
-plt.subplot(3,1,3)
+plt.subplot(3,3,9)
 plt.plot(time_gr,acceleration_gr)
 
 
