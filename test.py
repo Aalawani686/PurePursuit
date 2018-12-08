@@ -183,8 +183,8 @@ while(position < setPoint):
         position += min(velocity, k*v)*t
         velocity += acceleration*t
     elif(position <= distance2):
+        position += min(velocity, k*v)*t
         velocity = VELOCITY_MAX
-        position += min(velocity*t, k*v)
     elif(error < 0):
         velocity = -VELOCITY_MIN
     else:

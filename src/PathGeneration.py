@@ -13,8 +13,10 @@ class PathGeneration(object):
     base = None
     injected = None
     smoothed = None
-    pathC = None
+    pathR = None
     pathV = None
+    pathTV = None
+    maxR = None
 
     def __init__(self, base):
         if(len(base) < 2):
@@ -65,8 +67,8 @@ class PathGeneration(object):
         if(self.smoothed is None):
             print("Path not smoothed")
             return
-        self.pathC = []
-        self.pathC.append(0)
+        self.pathR = []
+        self.pathR.append(0)
         for node in range(1, len(self.smoothed[0][:-1])):
             x1 = self.smoothed[0][node] + 0.00001
             y1 = self.smoothed[1][node]
@@ -81,5 +83,34 @@ class PathGeneration(object):
             a = c1 - c2*b
             r = math.sqrt((x1-a)**2 + (y1-b)**2)
 
-            self.pathC.append(r)
-        self.pathC.append(0)
+            self.pathR.append(r)
+        self.pathR.append(0)
+        self.maxR = 10**(math.ceil(math.log10(max(self.pathR)))+1)
+
+    def velocityPath(self, MAX_VELOCITY = 40, MIN_VELOCITY = 10, k = 3):
+        if(self.pathR is None):
+            print("Path radius not calculated")
+            return
+        self.pathV = []
+        self.pathV.append(MIN_VELOCITY)
+        for node in range(1, len(self.pathR[:-1])):
+            self.pathV.append(max(MIN_VELOCITY, min(MAX_VELOCITY, k * self.pathR[node])))
+        self.pathV.append(MIN_VELOCITY)
+
+    def trapezoidedVelocity(self):
+        if(self.pathV is None):
+            print("Path velocity not calculated")
+            return
+        nodeNum = []
+        nodeVel = []
+        nodeNum.append(0)
+        nodeVel.append(self.pathV[0])
+        for node in range(1, len(self.pathV[:-1])):
+            nodeNum.append(node)
+            nodeVel.append(self.pathV[node])
+            if(self.pathV[node] < self.pathV[node+1]):
+                nodeNum.append(node+1)
+                nodeVel.append(self.pathV[node])
+        nodeNum.append(len(self.pathV)-1)
+        nodeVel.append(self.pathV[-1])
+        self.pathTV = [nodeNum, nodeVel]
