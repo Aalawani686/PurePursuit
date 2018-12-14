@@ -3,8 +3,8 @@ from PathGeneration import PathGeneration
 from Render import Render
 import math
 
-debug = True
-basePath = [[140, 175, 130, 25], [80, 20, -70, 40]]
+debug = False
+basePath = [[300, 350, 280, 25], [80, 20, -70, 40]]
 spacing = 15
 
 pathGen = PathGeneration(basePath)
@@ -13,6 +13,8 @@ pathGen.smoothPath(0.3, 0.7, 0.01)
 pathGen.radiusPath()
 pathGen.velocityPath(40, 5, 1)
 pathGen.trapezoidedVelocity()
+
+pathFol = PathFollowing(pathGen.smoothed)
 
 if(debug):
     renderDebug = Render()
@@ -36,5 +38,6 @@ if(debug):
     renderDebug.show()
 
 render = Render(1, 1)
-render.drawSubplot(pathGen.smoothed, 1, "Path", "connect", [0, 250], [-100, 100])
+render.drawSubplot(pathGen.smoothed, 1, "Path", "connect", [0, 400], [-100, 100])
+render.drawSubplot(pathFol.drawRobot(), 1, "Path", "plot", [0, 400], [-100, 100])
 render.show()
