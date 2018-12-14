@@ -1,4 +1,4 @@
-#from PathFollowing import PathFollowing
+from PathFollowing import PathFollowing
 from PathGeneration import PathGeneration
 from Render import Render
 import math
@@ -6,9 +6,6 @@ import math
 debug = True
 basePath = [[140, 175, 130, 25], [80, 20, -70, 40]]
 spacing = 15
-
-if(debug):
-    render = Render()
 
 pathGen = PathGeneration(basePath)
 pathGen.injectPath(spacing)
@@ -18,21 +15,26 @@ pathGen.velocityPath(40, 5, 1)
 pathGen.trapezoidedVelocity()
 
 if(debug):
-    render.drawSubplot(pathGen.base, 1, "Base Path", "scatter",
+    renderDebug = Render()
+
+    renderDebug.drawSubplot(pathGen.base, 1, "Base Path", "scatter",
         [0, 250], [-100, 100])
-    render.drawSubplot(pathGen.injected, 4, "Injected Path", "scatter",
+    renderDebug.drawSubplot(pathGen.injected, 3, "Injected Path", "connect",
         [0, 250], [-100, 100])
-    render.drawSubplot(pathGen.smoothed, 7, "Smoothed Path", "scatter",
+    renderDebug.drawSubplot(pathGen.smoothed, 5, "Smoothed Path", "connect",
         [0, 250], [-100, 100])
 
-    render.drawSubplot([range(len(pathGen.pathR)), pathGen.pathR],
+    renderDebug.drawSubplot([range(len(pathGen.pathR)), pathGen.pathR],
         2, "Path Radius", "scatter", [0 - 1, len(pathGen.pathR)], [1, pathGen.maxR],
         [0, len(pathGen.pathR)-1], True)
-    render.drawSubplot([range(len(pathGen.pathV)), pathGen.pathV],
-        5, "Path Velocity", "plot", [0 - 1, len(pathGen.pathV)],
+    renderDebug.drawSubplot([range(len(pathGen.pathV)), pathGen.pathV],
+        4, "Path Velocity", "plot", [0 - 1, len(pathGen.pathV)],
         [min(pathGen.pathV), max(pathGen.pathV) + 10], [0, len(pathGen.pathV)-1])
-    render.drawSubplot(pathGen.pathTV, 8, "Trapezoided Path Velocity", "plot",
+    renderDebug.drawSubplot(pathGen.pathTV, 6, "Trapezoided Path Velocity", "plot",
         [0 - 1, len(pathGen.pathV)], [min(pathGen.pathV), max(pathGen.pathV) + 10],
         [0, len(pathGen.pathV)-1])
+    renderDebug.show()
 
-    render.show()
+render = Render(1, 1)
+render.drawSubplot(pathGen.smoothed, 1, "Path", "connect", [0, 250], [-100, 100])
+render.show()

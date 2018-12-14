@@ -8,10 +8,13 @@ Tuning
 Stopping
 '''
 
-class PathFollowing(objects):
+class PathFollowing(object):
     curPoint = None
     path = None
 
-    def __init__(self, startPoint = [0, 0], path):
+    def __init__(self, path, startPoint = [0, 0]):
         self.curPoint = startPoint
         self.path = path
+
+    def wheelVelocity(self, V, C, T):
+        return [V*(2+(C*T))/2, V*(2-(C*T))/2]
