@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import math
 import copy
 import time
+from wheelVel import wheelVel
 from matplotlib.animation import FuncAnimation
 
 class Point:
@@ -46,16 +47,22 @@ def smoothing(path, a, b, tolerance, length):
     return newPath
 
 array = [0] * 4
-array[0] = [0] * 50
-array[1] = [0] * 50
-array[2] = [0] * 50
-array[3] = [0] * 50
+array[0] = [0] * 1000
+array[1] = [0] * 1000
+array[2] = [0] * 1000
+array[3] = [0] * 1000
 
 spacing = 15
 p1 = Point(90, 20)
 p2 = Point(100, -50)
 p3 = Point(160, 20)
 p4 = Point(190, -40)
+
+'''p1 = Point(90, 10)
+p2 = Point(100, -60)
+p3 = Point(120, 30)
+p4 = Point(150, -80)'''
+
 # start_point = 100
 
 deltaY = p2.y - p1.y
@@ -115,11 +122,11 @@ ax2.scatter(array[0], array[1])
 distance = [0] * len(array[0])
 for k in range (1, len(distance)):
     if(array[0][k] == 0): break
+    if(k == len(distance)-1):
+         break
     last = length
     length += distanceForm(array[0][k-1], array[1][k-1], array[0][k], array[1][k])
     distance[k] = distance[k-1] + distanceForm((int)(array[0][k-1]), (int)(array[1][k-1]), (int)(array[0][k]), (int)(array[1][k]))
-    if(k == len(distance)-1):
-         break
     x1 = array[0][k-1]+0.00001
     x2 = array[0][k]
     x3 = array[0][k+1]
@@ -131,11 +138,15 @@ for k in range (1, len(distance)):
     b = (x2*x2 - 2*x2*c1 + y2*y2 - x3*x3 + 2*x3*c1 - y3*y3)/(2*(x3*c2 - y3 + y2 - x2*c2))
     a = c1 - c2*b
     r = math.sqrt((x1-a)**2 + (y1-b)**2)
+
     array[2][k] = r
+    ''' Find A better way to determine whether curvature should be positive or negative'''
+
     array[3][k] = length
     if(r<10):
         circle1 = plt.Circle((a, b), r, color='r')
         ax2.add_artist(circle1)
+
     # print("X: " + str(array[0][k] - array[0][k-1]) + "Y: " + str(str(array[1][k] - array[1][k-1])) + "Length: " + str(length - last))
     # print("Curvature: " + str(1/r) + "   Radius: " + str(r))
     # print("Distance of " + str(k) + ": " + str(distance[k]))
@@ -167,6 +178,9 @@ aT = 0
 i = 0
 k = 3
 j = 1
+deceleration = 0
+
+wheels = wheelVel(10, 20, 10)
 
 while(position < setPoint):
     lastT = t1
@@ -174,32 +188,57 @@ while(position < setPoint):
     t = (t1 - lastT)
     aT += t
     i += 1
+
     if(position > array[3][j]):
         j = j+1
 
-    v = array[2][j]
+    # array[2][j+1]*k < velocity
+    # (VELOCITY_MAX-array[2][j+1]*k)*t
+    r = array[2][j]
+    v = math.fabs(r)
     error = setPoint-position;
 
     if(position <= distance1):
         position += min(velocity, k*v)*t
         velocity += acceleration*t
     elif(position <= distance2):
-        velocity = VELOCITY_MAX
-        position += min(velocity*t, k*v)
+        if(array[2][j+1]*k < velocity):
+            dist = distanceForm(array[0][j], array[1][j], array[0][j+1], array[1][j+1])
+            if(deceleration == 0):
+                deceleration = ((array[2][j+1]*k * array[2][j+1]*k) - velocity*velocity)/(2*dist)
+                print(j, " ", deceleration)
+                position += (velocity+deceleration*t)*t
+            # position += min(velocity, math.sqrt((array[2][j+1]*k * array[2][j+1]*k) - 2*)(velocity at point (i + 1))2 + 2 * a * distance )
+        else:
+            deceleration = 0
+            velocity = VELOCITY_MAX
+            position += min(velocity, k*v)*t
+        # position += velocity*t
     elif(error < 0):
         velocity = -VELOCITY_MIN
     else:
         if(velocity<VELOCITY_MIN):
             velocity = VELOCITY_MIN
-            position += min(veloctity ,k*v)*t
+            position += min(velocity ,k*v)*t
         else:
             position += min(velocity, k*v)*t
             velocity -= (acceleration * t)
+
+    wheels.setCurvature(1/r)
+    wheels.setVelocity(velocity)
+    wheels.calculate()
+
+    # TODO: APPLY WHEEL VELOCITIES TO CREATE MOVING DOTS
     if(i%10000 == 0):
+        # print("Point: ", j, " Curvature: ", 1/v, " Velocity: ", velocity)
+        # print("Point: ", j, " Curvature: ", 1/r," Left: ", wheels.getLeft(), " Right: ",wheels.getRight())
         distance_gr.append(position)
         velocity_gr.append(min(velocity, k*v))
+        # velocity_gr.append(velocity)
         acceleration_gr.append(acceleration)
         time_gr.append(aT)
+
+print(aT)
 
 plt.subplot(3,1,1)
 plt.plot(time_gr,distance_gr)
