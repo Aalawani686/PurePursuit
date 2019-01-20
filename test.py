@@ -111,7 +111,6 @@ plt.xlim(0, 300)
 plt.ylim(-100, 200)
 fig3, ax3 = plt.subplots()
 
-
 # vector = end_point - start_point
 #print(num_points_that_fit2+num_points_that_fit)
 
@@ -202,18 +201,8 @@ while(position < setPoint):
         position += min(velocity, k*v)*t
         velocity += acceleration*t
     elif(position <= distance2):
-        if(array[2][j+1]*k < velocity):
-            dist = distanceForm(array[0][j], array[1][j], array[0][j+1], array[1][j+1])
-            if(deceleration == 0):
-                deceleration = ((array[2][j+1]*k * array[2][j+1]*k) - velocity*velocity)/(2*dist)
-                print(j, " ", deceleration)
-                position += (velocity+deceleration*t)*t
-            # position += min(velocity, math.sqrt((array[2][j+1]*k * array[2][j+1]*k) - 2*)(velocity at point (i + 1))2 + 2 * a * distance )
-        else:
-            deceleration = 0
-            velocity = VELOCITY_MAX
-            position += min(velocity, k*v)*t
-        # position += velocity*t
+        position += min(velocity, k*v)*t
+        velocity = VELOCITY_MAX
     elif(error < 0):
         velocity = -VELOCITY_MIN
     else:
@@ -238,13 +227,11 @@ while(position < setPoint):
         acceleration_gr.append(acceleration)
         time_gr.append(aT)
 
-print(aT)
-
-plt.subplot(3,1,1)
+plt.subplot(3,3,3)
 plt.plot(time_gr,distance_gr)
-plt.subplot(3,1,2)
+plt.subplot(3,3,6)
 plt.plot(time_gr,velocity_gr)
-plt.subplot(3,1,3)
+plt.subplot(3,3,9)
 plt.plot(time_gr,acceleration_gr)
 
 
