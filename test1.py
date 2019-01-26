@@ -3,6 +3,13 @@ import math
 import copy
 import time
 from matplotlib.animation import FuncAnimation
+from threading import Thread
+
+
+class Robot():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 class Point:
     """ Point class represents and manipulates x,y coords. """
@@ -94,6 +101,45 @@ for i in range(0, num_points_that_fit3):
     array[0].append(p3.x + XXX * i)
     array[1].append(p3.y + YYY * i)
 
+for i in range(0, len(array[0])):
+    print("X: " + str(array[0][i]) + " Y: " + str(array[1][i]))
+
+R = Robot(100, 50)
+minLength = 100000;
+point = -1;
+for i in range(0, len(array[0])):
+    if(minLength > distanceForm(R.x, R.y, array[0][i], array[1][i])):
+        minLength = distanceForm(R.x, R.y, array[0][i], array[1][i])
+        point = i
+
+def Dot(a, b):
+    return (a.x * b.x) + (a.y * b.y)
+
+E = Point(array[0][point], array[1][point])
+L = Point(array[0][point+1], array[1][point+1])
+r = 20
+C = Point(R.x, R.y)
+d = Point(array[0][point+1]-array[0][point], array[1][point+1]-array[1][point])
+f = Point(array[0][point]-R.x, array[1][point]-R.y)
+a = Dot(d, d)
+b = 2 * Dot(f, d)
+c = Dot(f, f) - (r * r)
+discriminant = (b * b) - (4 * a * c)
+
+
+if(discriminant < 0):
+    print("Did not find intersection")
+else:
+    discriminant = math.sqrt(discriminant)
+    t1 = (-b - discriminant)/(2*a)
+    t2 = (-b + discriminant)/(2*a)
+    if (t1 >= 0 and t1 <=1):
+        print("Found t1 intersection" + str(t1))
+    if (t2 >= 0 and t2 <=1):
+        print("Found t2 intersection" + str(t2))
+
+print(str(point) + " " + str(array[0][point]) + " " + str(array[1][point]))
+
 fig, ax = plt.subplots()
 plt.xlim(0, 300)
 plt.ylim(-100, 200)
@@ -102,12 +148,16 @@ plt.xlim(0, 300)
 plt.ylim(-100, 200)
 fig3, ax3 = plt.subplots()
 
+
 # vector = end_point - start_point
 #print(num_points_that_fit2+num_points_that_fit)
 
 ax.scatter(array[0], array[1])
-# array = smoothing(array, .7, .3, 0.01, len(array[0]))
+array = smoothing(array, .7, .3, 0.01, len(array[0]))
 ax2.scatter(array[0], array[1])
+R_C = plt.Circle((C.x, C.y), r, color='g', fill=False)
+ax2.add_artist(R_C)
+
 
 array[3].append(0)
 array[2].append(10000000)
@@ -184,7 +234,7 @@ while(position < setPoint):
         velocity += acceleration*t
     elif(position <= distance2):
         velocity = VELOCITY_MAX
-        position += min(velocity*t, k*v)
+        position += min(velocity, k*v)*t
     elif(error < 0):
         velocity = -VELOCITY_MIN
     else:
