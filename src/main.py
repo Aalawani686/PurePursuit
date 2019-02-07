@@ -2,6 +2,7 @@ from PathFollowing import PathFollowing
 from PathGeneration import PathGeneration
 from Render import Render
 import math
+import numpy
 
 debug = False
 basePath = [[300, 350, 280, 25], [80, 20, -70, 40]]
@@ -15,6 +16,7 @@ pathGen.velocityPath(40, 5, 1)
 pathGen.trapezoidedVelocity()
 
 pathFol = PathFollowing(pathGen.smoothed)
+#pathFol.lookahead([0, 0], [2, 1], [5, 7], 7)
 
 if(debug):
     renderDebug = Render()
