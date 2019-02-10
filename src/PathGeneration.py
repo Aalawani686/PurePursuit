@@ -9,6 +9,7 @@ Curvature of Path
 Velocities
 '''
 
+
 class PathGeneration(object):
     base = None
     injected = None
