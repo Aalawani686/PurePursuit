@@ -31,6 +31,7 @@ class Render(object):
 
         for x in bars:
             plt.axvline(x=x, color="red", linestyle="--")
+        
 
     def show(self):
         mng = plt.get_current_fig_manager()
